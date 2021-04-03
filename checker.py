@@ -8,6 +8,8 @@ from bs4 import BeautifulSoup
 
 img_test_url = "https://mdn.github.io/learning-area/accessibility/html/accessible-image.html"
 e_commerce_test = "https://www.gittigidiyor.com"
+table_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-table.html"
+a_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-links.html"
 
 session = requests.Session()  # for faster fetch
 # file = open("accessibility-score.txt", "w+", encoding="utf-8")
@@ -72,8 +74,16 @@ def check_a_tag():
                   "\n ".join(missing_hrefs))
         if new_windows:
             print(
-                "These anchor tags are redirecting to a new page, consider adding an explanation such as: '(opens in a new window)':  \n",
+                "These anchor tags are redirecting to a new page, consider adding an explanation to the content such as: '(opens in a new window)':  \n",
                 "\n ".join(new_windows))
+
+
+def check_table_tag():  # th, caption etc.
+    pass
+
+
+def check_form_tag():  # labels
+    pass
 
 
 check_img_tag()
