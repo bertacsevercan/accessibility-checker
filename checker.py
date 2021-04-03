@@ -10,7 +10,10 @@ img_test_url = "https://mdn.github.io/learning-area/accessibility/html/accessibl
 e_commerce_test = "https://www.gittigidiyor.com"
 table_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-table.html"
 a_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-links.html"
-
+bad_semantics_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-semantics.html"
+good_semantics_test_url = "https://mdn.github.io/learning-area/accessibility/html/good-semantics.html"
+bad_form_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-form.html"
+good_form_test_url = "https://mdn.github.io/learning-area/accessibility/html/good-form.html"
 session = requests.Session()  # for faster fetch
 # file = open("accessibility-score.txt", "w+", encoding="utf-8")
 
