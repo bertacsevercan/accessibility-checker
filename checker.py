@@ -9,7 +9,8 @@ from termcolor import colored, cprint
 
 img_test_url = "https://mdn.github.io/learning-area/accessibility/html/accessible-image.html"
 e_commerce_test = "https://www.gittigidiyor.com"
-table_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-table.html"
+bad_table_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-table.html"
+good_table_test_url = "https://github.com/mdn/learning-area/blob/master/css/styling-boxes/styling-tables/punk-bands-complete.html"
 a_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-links.html"
 bad_semantics_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-semantics.html"
 good_semantics_test_url = "https://mdn.github.io/learning-area/accessibility/html/good-semantics.html"
@@ -85,7 +86,7 @@ def check_a_tag():
                 missing_hrefs.append(str(tag))
             elif "target" in attrs_keys and tag["target"] == "_blank":
                 new_windows.append(str(tag))
-            if "click here" in tag.string:
+            if tag.string and "click here" in tag.string:
                 score -= 1
                 bad_links.append(str(tag))
 
@@ -153,6 +154,7 @@ def check_form_tag():
     labels = []
     inputs = []
     mismatch_labels = []
+    mismatch_inputs = []
     for form in all_form:
         if form.label is None:
             score -= 1
@@ -163,17 +165,22 @@ def check_form_tag():
             for _input in form.find_all("input"):
                 inputs.append(_input)
             for i in range(len(labels)):
-                if labels[i]["for"] != inputs[i]["id"]:
+                if labels[i]["for"] and inputs[i]["id"] and labels[i]["for"] != inputs[i]["id"]:
                     mismatch_labels.append(str(labels[i]))
+                    mismatch_inputs.append(str(inputs[i]))
     if missing_labels:
         cprint("These forms are missing the labels for inputs:", c_danger)
         print("\n".join(missing_labels))
         cprint(
             "To associate the label unambiguously with the form input and make it clear how to fill it in, consider adding label tags.",
             c_success)
-    if mismatch_labels:
-        cprint("These forms' labels' 'for' attributes don't match with inputs' 'id' attribute:\n", c_warning, end=" ")
-        print("\n ".join(mismatch_labels))
+    if mismatch_labels and mismatch_inputs:
+        cprint("These forms' labels' 'for' attributes don't match with inputs' 'id' attribute:", c_warning)
+        for i in range(len(mismatch_labels)):
+            print(" " + mismatch_labels[i])
+            print(" " + mismatch_inputs[i])
+        #print("\n ".join(mismatch_labels))
+        #print("\n ".join(mismatch_inputs))
         cprint(
             "To associate the <label> with an <input> element, you need to give the <input> an id attribute."
             "\nThe <label> then needs a for attribute whose value is the same as the input's id.",
