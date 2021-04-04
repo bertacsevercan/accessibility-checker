@@ -23,7 +23,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
 request = None
 try:
-    request = session.get(img_test_url, headers=headers)
+    request = session.get(a_test_url, headers=headers)
     # raise and handle http errors
     request.raise_for_status()
 except requests.exceptions.HTTPError as err:
@@ -59,11 +59,11 @@ def check_img_tag():
         if missing_alts:
             cprint("These img tags are missing 'alt' attribute:\n", c_danger, end=" ")
             print("\n ".join(missing_alts))
-            cprint("It's recommended to add 'alt' attribute to increase accessibility.")
+            cprint("It's recommended to add 'alt' attribute to increase accessibility.", c_success)
         if missing_titles:
             cprint("These img tags are missing 'title' attribute:\n", c_warning, end=" ")
             print("\n ".join(missing_titles))
-            cprint("Consider adding a title attribute to increase accessibility.", "green")
+            cprint("Consider adding a title attribute to increase accessibility.", c_success)
         if empty_alts:
             cprint("These img tags have empty 'alt' attribute:\n", c_warning, end=" ")
             print("\n ".join(empty_alts))
@@ -76,6 +76,7 @@ def check_a_tag():
     all_a = soup.find_all("a")
     missing_hrefs = []
     new_windows = []
+    bad_links = []
     if all_a:
         for tag in all_a:
             attrs_keys = tag.attrs.keys()
@@ -84,6 +85,10 @@ def check_a_tag():
                 missing_hrefs.append(str(tag))
             elif "target" in attrs_keys and tag["target"] == "_blank":
                 new_windows.append(str(tag))
+            if "click here" in tag.string:
+                score -= 1
+                bad_links.append(str(tag))
+
         if missing_hrefs:
             cprint("These anchor tags' href attributes are '#':\n", c_danger, end=" ")
             print("\n ".join(missing_hrefs))
@@ -95,8 +100,17 @@ def check_a_tag():
             print("\n ".join(new_windows))
             cprint("Consider adding an explanation to the content such as: '(opens in a new window)'.", c_success)
 
+        if bad_links:
+            cprint(
+                "These anchor tags contain non-descriptive content message such as: 'click here':\n", c_warning,
+                end=" ")
+            print("\n ".join(bad_links))
+            cprint(
+                "Make sure your links' content messages make sense out of context, read on their own, as well as in the context of the paragraph they are in.",
+                c_success)
 
-def check_table_tag():  # scope, th, caption etc.
+
+def check_table_tag():
     global score
     all_table = soup.find_all("table")  # list(map(lambda x: x.contents, soup.find_all("table")))
     missing_ths = []
@@ -118,12 +132,18 @@ def check_table_tag():  # scope, th, caption etc.
     if missing_ths:
         cprint("These table tags are missing 'th' child tag:\n", c_danger, end=" ")
         print("\n ".join(missing_ths))
+        cprint("'th' tag helps screen readers to identify table content better.", c_success)
     if missing_captions:
         cprint("These table tags are missing 'caption' child tag:\n", c_danger, end=" ")
         print("\n ".join(missing_captions))
+        cprint(
+            "Captions act as alt text for a table, giving a screen reader user a useful quick summary of the table's contents.",
+            c_success)
     if missing_scopes:
         cprint("These th tags are missing 'scope' attribute:\n", c_warning, end=" ")
         print("\n ".join(missing_scopes))
+        cprint("Scopes help a screen reader user to associate rows or columns together as groupings of data.",
+               c_success)
 
 
 def check_form_tag():  # labels
@@ -140,8 +160,10 @@ def check_language():
 def show_score():
     global score
     color = ""
+    message = "May needs some work!"
     if score >= 80:
         color = c_success
+        message = "Looks good!"
     elif score >= 50:
         color = c_primary
     elif score >= 30:
@@ -150,10 +172,12 @@ def show_score():
         color = c_danger
     if score < 0:
         score = 0
+    print()
+    cprint(message, c_secondary)
     cprint(f"Score: {score}", color, "on_grey")
 
 
-cprint(website_title, attrs=['underline', 'bold'])
+cprint(website_title + "\n", c_secondary, attrs=['underline', 'bold'])
 check_img_tag()
 check_a_tag()
 check_table_tag()
