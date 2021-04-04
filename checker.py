@@ -30,13 +30,13 @@ except requests.exceptions.HTTPError as err:
     raise SystemExit(err)
 
 soup = BeautifulSoup(request.content, "html.parser")
-website_title = soup.title.text
 score = 100  # initial score of the website
 c_success = "green"
 c_danger = "red"
 c_warning = "yellow"
 c_primary = "blue"
 c_secondary = "cyan"
+c_alert = "magenta"
 
 
 def check_img_tag():
@@ -168,7 +168,9 @@ def check_form_tag():
     if missing_labels:
         cprint("These forms are missing the labels for inputs:", c_danger)
         print("\n".join(missing_labels))
-        cprint("To associate the label unambiguously with the form input and make it clear how to fill it in, consider adding label tags.", c_success)
+        cprint(
+            "To associate the label unambiguously with the form input and make it clear how to fill it in, consider adding label tags.",
+            c_success)
     if mismatch_labels:
         cprint("These forms' labels' 'for' attributes don't match with inputs' 'id' attribute:\n", c_warning, end=" ")
         print("\n ".join(mismatch_labels))
@@ -179,8 +181,10 @@ def check_form_tag():
 
 
 def check_language():
+    global score
     attrs_keys = soup.find("html").attrs.keys()
     if "lang" not in attrs_keys:
+        score -= 1
         cprint("Html tag is missing 'lang' attribute. Therefore, the language of the document  is unidentified.",
                c_danger)
 
@@ -205,7 +209,21 @@ def show_score():
     cprint(f"Score: {score}", color, "on_grey")
 
 
-cprint(website_title + "\n", c_secondary, attrs=['underline', 'bold'])
+def check_title():
+    global score
+    title = ""
+    if soup.title is None:
+        title = "Unknown"
+        score -= 1
+        cprint("It is important in each HTML document to include a <title> that describes the page's purpose.",
+               c_danger)
+    else:
+        title = soup.title.text
+    website_title = colored(title, c_alert, attrs=['underline', 'bold'])
+    cprint("Title: " + website_title + "\n", c_secondary)
+
+
+check_title()
 check_language()
 check_img_tag()
 check_a_tag()
