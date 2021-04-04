@@ -1,6 +1,8 @@
 import requests
 import sys
 from bs4 import BeautifulSoup
+from termcolor import colored, cprint
+
 
 # use Argparse for CLI
 # add color
