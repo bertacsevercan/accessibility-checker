@@ -32,6 +32,11 @@ except requests.exceptions.HTTPError as err:
 soup = BeautifulSoup(request.content, "html.parser")
 website_title = soup.title.text
 score = 100  # initial score of the website
+c_success = "green"
+c_danger = "red"
+c_warning = "yellow"
+c_primary = "blue"
+c_secondary = "cyan"
 
 
 def check_img_tag():
@@ -52,18 +57,18 @@ def check_img_tag():
                 missing_titles.append(str(tag))
 
         if missing_alts:
-            cprint("These img tags are missing 'alt' attribute:\n", "red", end=" ")
-            print(" \n ".join(missing_alts))
+            cprint("These img tags are missing 'alt' attribute:\n", c_danger, end=" ")
+            print("\n ".join(missing_alts))
             cprint("It's recommended to add 'alt' attribute to increase accessibility.")
         if missing_titles:
-            cprint("These img tags are missing 'title' attribute:\n", "yellow", end=" ")
-            print(" \n ".join(missing_titles))
+            cprint("These img tags are missing 'title' attribute:\n", c_warning, end=" ")
+            print("\n ".join(missing_titles))
             cprint("Consider adding a title attribute to increase accessibility.", "green")
         if empty_alts:
-            cprint("These img tags have empty 'alt' attribute:\n", "yellow", end=" ")
+            cprint("These img tags have empty 'alt' attribute:\n", c_warning, end=" ")
             print("\n ".join(empty_alts))
             cprint("This is okay if you are using the images for decorative purposes."
-                   "\nHowever, if possible you should use CSS to display images that are only decorative.", "green")
+                   "\nHowever, if possible you should use CSS to display images that are only decorative.", c_success)
 
 
 def check_a_tag():
@@ -80,12 +85,15 @@ def check_a_tag():
             elif "target" in attrs_keys and tag["target"] == "_blank":
                 new_windows.append(str(tag))
         if missing_hrefs:
-            print("These anchor tags' href attributes are '#'. Consider using a button instead:\n",
-                  "\n ".join(missing_hrefs))
+            cprint("These anchor tags' href attributes are '#':\n", c_danger, end=" ")
+            print("\n ".join(missing_hrefs))
+            cprint("If you are not using anchor tags for navigation consider using a button instead.", c_success)
+
         if new_windows:
-            print(
-                "These anchor tags are redirecting to a new page, consider adding an explanation to the content such as: '(opens in a new window)':  \n",
-                "\n ".join(new_windows))
+            cprint(
+                "These anchor tags are redirecting to a new page:\n", c_warning, end=" ")
+            print("\n ".join(new_windows))
+            cprint("Consider adding an explanation to the content such as: '(opens in a new window)'.", c_success)
 
 
 def check_table_tag():  # scope, th, caption etc.
@@ -108,11 +116,14 @@ def check_table_tag():  # scope, th, caption etc.
             missing_captions.append(str(table))
 
     if missing_ths:
-        print("These table tags are missing 'th' child tag:\n" + " \n ".join(missing_ths))
+        cprint("These table tags are missing 'th' child tag:\n", c_danger, end=" ")
+        print("\n ".join(missing_ths))
     if missing_captions:
-        print("These table tags are missing 'caption' child tag:\n" + " \n ".join(missing_captions))
+        cprint("These table tags are missing 'caption' child tag:\n", c_danger, end=" ")
+        print("\n ".join(missing_captions))
     if missing_scopes:
-        print("These th tags are missing 'scope' attribute:\n" + " \n ".join(missing_scopes))
+        cprint("These th tags are missing 'scope' attribute:\n", c_warning, end=" ")
+        print("\n ".join(missing_scopes))
 
 
 def check_form_tag():  # labels
@@ -122,7 +133,24 @@ def check_form_tag():  # labels
 def check_language():
     attrs_keys = soup.find("html").attrs.keys()
     if "lang" not in attrs_keys:
-        cprint("Html tag is missing 'lang' attribute. Therefore, the language of the document or a page element is unidentified.", "red")
+        cprint("Html tag is missing 'lang' attribute. Therefore, the language of the document  is unidentified.",
+               c_danger)
+
+
+def show_score():
+    global score
+    color = ""
+    if score >= 80:
+        color = c_success
+    elif score >= 50:
+        color = c_primary
+    elif score >= 30:
+        color = c_warning
+    elif score < 30:
+        color = c_danger
+    if score < 0:
+        score = 0
+    cprint(f"Score: {score}", color, "on_grey")
 
 
 cprint(website_title, attrs=['underline', 'bold'])
@@ -130,4 +158,4 @@ check_img_tag()
 check_a_tag()
 check_table_tag()
 check_language()
-cprint(f"Score: {score}", "blue")
+show_score()
