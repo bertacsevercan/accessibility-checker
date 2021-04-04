@@ -3,7 +3,6 @@ import sys
 from bs4 import BeautifulSoup
 from termcolor import colored, cprint
 
-
 # use Argparse for CLI
 # add color
 # website_url = input("Enter the website url: ")  # sys.argv[1]
@@ -24,7 +23,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
 request = None
 try:
-    request = session.get(table_test_url, headers=headers)
+    request = session.get(img_test_url, headers=headers)
     # raise and handle http errors
     request.raise_for_status()
 except requests.exceptions.HTTPError as err:
@@ -53,12 +52,18 @@ def check_img_tag():
                 missing_titles.append(str(tag))
 
         if missing_alts:
-            print("These img tags are missing 'alt' attribute:\n", "\n ".join(missing_alts))
+            cprint("These img tags are missing 'alt' attribute:\n", "red", end=" ")
+            print(" \n ".join(missing_alts))
+            cprint("It's recommended to add 'alt' attribute to increase accessibility.")
         if missing_titles:
-            print("These img tags are missing 'title' attribute:\n", "\n ".join(missing_titles))
+            cprint("These img tags are missing 'title' attribute:\n", "yellow", end=" ")
+            print(" \n ".join(missing_titles))
+            cprint("Consider adding a title attribute to increase accessibility.", "green")
         if empty_alts:
-            print("These img tags have empty 'alt' attribute:\n",
-                  "\n ".join(empty_alts) + "\nThis is okay if your are using the images for decorative purposes.")
+            cprint("These img tags have empty 'alt' attribute:\n", "yellow", end=" ")
+            print("\n ".join(empty_alts))
+            cprint("This is okay if you are using the images for decorative purposes."
+                   "\nHowever, if possible you should use CSS to display images that are only decorative.", "green")
 
 
 def check_a_tag():
@@ -85,7 +90,7 @@ def check_a_tag():
 
 def check_table_tag():  # scope, th, caption etc.
     global score
-    all_table = soup.find_all("table") #list(map(lambda x: x.contents, soup.find_all("table")))
+    all_table = soup.find_all("table")  # list(map(lambda x: x.contents, soup.find_all("table")))
     missing_ths = []
     missing_captions = []
     missing_scopes = []
@@ -114,7 +119,15 @@ def check_form_tag():  # labels
     pass
 
 
+def check_language():
+    attrs_keys = soup.find("html").attrs.keys()
+    if "lang" not in attrs_keys:
+        cprint("Html tag is missing 'lang' attribute. Therefore, the language of the document or a page element is unidentified.", "red")
+
+
+cprint(website_title, attrs=['underline', 'bold'])
 check_img_tag()
 check_a_tag()
 check_table_tag()
-print("Score:", score)
+check_language()
+cprint(f"Score: {score}", "blue")
