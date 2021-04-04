@@ -22,7 +22,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
 request = None
 try:
-    request = session.get(e_commerce_test, headers=headers)
+    request = session.get(table_test_url, headers=headers)
     # raise and handle http errors
     request.raise_for_status()
 except requests.exceptions.HTTPError as err:
@@ -81,8 +81,31 @@ def check_a_tag():
                 "\n ".join(new_windows))
 
 
-def check_table_tag():  # th, caption etc.
-    pass
+def check_table_tag():  # scope, th, caption etc.
+    global score
+    all_table = soup.find_all("table") #list(map(lambda x: x.contents, soup.find_all("table")))
+    missing_ths = []
+    missing_captions = []
+    missing_scopes = []
+    for table in all_table:
+        if table.th is None:
+            score -= 1
+            missing_ths.append(str(table))
+        elif table.th is not None:
+            for th in table.find_all("th"):
+                attrs_keys = th.attrs.keys()
+                if "scope" not in attrs_keys:
+                    missing_scopes.append(th)
+        if table.caption is None:
+            score -= 1
+            missing_captions.append(str(table))
+
+    if missing_ths:
+        print("These table tags are missing 'th' child tag:\n" + " \n ".join(missing_ths))
+    if missing_captions:
+        print("These table tags are missing 'caption' child tag:\n" + " \n ".join(missing_captions))
+    if missing_scopes:
+        print("These th tags are missing 'scope' attribute:\n" + " \n ".join(missing_scopes))
 
 
 def check_form_tag():  # labels
@@ -91,4 +114,5 @@ def check_form_tag():  # labels
 
 check_img_tag()
 check_a_tag()
+check_table_tag()
 print("Score:", score)
