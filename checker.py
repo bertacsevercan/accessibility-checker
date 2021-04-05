@@ -24,7 +24,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
 request = None
 try:
-    request = session.get(good_form_test_url, headers=headers)
+    request = session.get(e_commerce_test, headers=headers)
     # raise and handle http errors
     request.raise_for_status()
 except requests.exceptions.HTTPError as err:
@@ -147,7 +147,7 @@ def check_table_tag():
                c_success)
 
 
-def check_form_tag():
+def check_form_tag():  # decrease score according to input numbers for labels.
     global score
     all_form = soup.find_all("form")
     missing_labels = []
@@ -179,8 +179,8 @@ def check_form_tag():
         for i in range(len(mismatch_labels)):
             print(" " + mismatch_labels[i])
             print(" " + mismatch_inputs[i])
-        #print("\n ".join(mismatch_labels))
-        #print("\n ".join(mismatch_inputs))
+        # print("\n ".join(mismatch_labels))
+        # print("\n ".join(mismatch_inputs))
         cprint(
             "To associate the <label> with an <input> element, you need to give the <input> an id attribute."
             "\nThe <label> then needs a for attribute whose value is the same as the input's id.",
