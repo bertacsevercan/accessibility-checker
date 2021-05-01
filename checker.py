@@ -24,7 +24,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
 request = None
 try:
-    request = session.get(e_commerce_test, headers=headers)
+    request = session.get(bad_semantics_test_url, headers=headers)
     # raise and handle http errors
     request.raise_for_status()
 except requests.exceptions.HTTPError as err:
@@ -39,7 +39,40 @@ c_primary = "blue"
 c_secondary = "cyan"
 c_alert = "magenta"
 
-#not checking for aria roles
+
+# not checking for wai-aria attrs
+
+def check_heading_tags():
+    global score
+    h1 = soup.find("h1") is None
+    h2 = soup.find("h2") is None
+    h3 = soup.find("h3") is None
+    h4 = soup.find("h4") is None
+    h5 = soup.find("h5") is None
+    h6 = soup.find("h6") is None
+
+    if h1 and h2 and h3 and h4 and h5 and h6:
+        score -= 10
+        cprint("The page has no headings!\n", c_danger, end="")
+        cprint("Headings (<h1>-<h6>) provide important document structure and helps assistive technology users.\n",
+               c_success)
+
+
+def check_page_regions():
+    global score
+    header = soup.find("header") is None
+    nav = soup.find("nav") is None
+    main = soup.find("main") is None
+    footer = soup.find("footer") is None
+    aside = soup.find("aside") is None
+
+    if header and nav and main and footer and aside:
+        score -= 10
+        cprint("The page has no regions!\n", c_danger, end="")
+        cprint(
+            "Mark up different regions of the web page, so that they can be identified by web browsers and assistive technologies.\n",
+            c_success)
+
 
 def check_img_tag():
     global score
@@ -72,7 +105,8 @@ def check_img_tag():
             cprint("These img tags have empty 'alt' attribute:\n", c_danger, end=" ")
             print("\n ".join(empty_alts))
             cprint("This is okay if you are using the images for decorative purposes."
-                   "\nHowever, if possible it's recommended to use CSS to display images that are only decorative.", c_success)
+                   "\nHowever, if possible it's recommended to use CSS to display images that are only decorative.",
+                   c_success)
 
 
 def check_a_tag():
@@ -169,10 +203,11 @@ def check_form_tag():  # decrease score according to input numbers for labels.
             for _input in form.find_all("input"):
                 inputs.append(_input)
             for i in range(len(labels)):
-                if labels[i]["for"] and inputs[i]["id"] and labels[i]["for"] != inputs[i]["id"]:
-                    score -= 1
-                    mismatch_labels.append(str(labels[i]))
-                    mismatch_inputs.append(str(inputs[i]))
+                if "for" in labels[i].attrs.keys() and "id" in inputs[i].attrs.keys():
+                    if labels[i]["for"] != inputs[i]["id"]:
+                        score -= 1
+                        mismatch_labels.append(str(labels[i]))
+                        mismatch_inputs.append(str(inputs[i]))
     if missing_labels:
         cprint("These forms are missing the labels for inputs:", c_danger)
         print("\n".join(missing_labels))
@@ -184,8 +219,6 @@ def check_form_tag():  # decrease score according to input numbers for labels.
         for i in range(len(mismatch_labels)):
             print(" " + mismatch_labels[i])
             print(" " + mismatch_inputs[i])
-        # print("\n ".join(mismatch_labels))
-        # print("\n ".join(mismatch_inputs))
         cprint(
             "To associate the <label> with an <input> element, you need to give the <input> an 'id' attribute."
             "\nThe <label> then needs a 'for' attribute whose value is the same as the input's 'id'.",
@@ -196,7 +229,7 @@ def check_language():
     global score
     attrs_keys = soup.find("html").attrs.keys()
     if "lang" not in attrs_keys:
-        score -= 1
+        score -= 10
         cprint("Html tag is missing 'lang' attribute. Therefore, the language of the document  is unidentified.",
                c_danger)
 
@@ -226,7 +259,7 @@ def check_title():
     title = ""
     if soup.title is None:
         title = "Unknown"
-        score -= 1
+        score -= 10
         cprint("It is important in each HTML document to include a <title> that describes the page's purpose.",
                c_danger)
     else:
@@ -237,6 +270,8 @@ def check_title():
 
 check_title()
 check_language()
+check_heading_tags()
+check_page_regions()
 check_img_tag()
 check_a_tag()
 check_table_tag()
