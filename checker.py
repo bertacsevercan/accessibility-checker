@@ -1,10 +1,11 @@
 import requests
 import argparse
+import csv
 from bs4 import BeautifulSoup
 from termcolor import colored, cprint
 
 description = "This program checks the given website's accessibility \
-provided by the W3C guidelines and outputs a score. Note that, this is not a definite tool for checking accessibility \
+provided by the W3C guidelines and outputs a score from 0-100. Note that, this is not a definite tool for checking accessibility \
 therefore the results should be treated as suggestions. Also, this program doesn't check \
 WAI-ARIA attributes, it checks for other HTML semantics. \
 Sources: https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=121#identify-input-purpose, https://developer.mozilla.org/en-US/docs/Web/Accessibility"
@@ -16,7 +17,6 @@ parser.add_argument("-n", "--name", help="enter the name of the website.")
 parser.add_argument("-s", "--short", action="store_true", help="show a short version of the result with highlights.")
 parser.add_argument("-o", "--score", action="store_true", help="show only the score.")
 parser.add_argument("-c", "--csv", action="store_true", help="write the scores as csv.")
-parser.add_argument("-x", "--excel", action="store_true", help="write the scores as excel.")
 
 args = parser.parse_args()
 
@@ -46,6 +46,7 @@ except requests.exceptions.HTTPError as err:
 
 soup = BeautifulSoup(request.content, "html.parser")
 score = 100  # initial score of the website
+title = ""
 c_success = "green"
 c_danger = "red"
 c_warning = "yellow"
@@ -200,7 +201,7 @@ def check_table_tag():
         if missing_scopes:
             cprint("These th tags are missing 'scope' attribute:\n", c_danger, end=" ")
             None if args.short else print("\n ".join(missing_scopes))
-            cprint("Scopes help a screen reader user to associate rows or columns together as groupings of data.",
+            cprint("Scopes help a screen reader user to associate rows or columns together as groupings of csv.",
                    c_success)
 
 
@@ -248,21 +249,22 @@ def check_form_tag():  # decrease score according to input numbers for labels.
 
 def check_language():
     global score
-    attrs_keys = soup.find("html").attrs.keys()
+    html = soup.find("html").attrs
+    attrs_keys = html.keys()
     if "lang" not in attrs_keys:
         score -= 10
         None if args.score else cprint(
             "Html tag is missing 'lang' attribute. Therefore, the language of the document  is unidentified.",
             c_danger)
+    return html["lang"]
 
 
 def check_title():
     global score
-    title = ""
+    global title
     if soup.title is None:
         title = "Unknown"
         score -= 10
-
         None if args.score else cprint(
             "It is important in each HTML document to include a <title> that describes the page's purpose.",
             c_danger)
@@ -292,6 +294,26 @@ def show_score():
     cprint(f"Score: {score}", color, "on_grey")
 
 
+def write_csv():
+    first_row = []
+    heading_list = ["Name", "Score", "Language", "Domain"]
+    try:
+        with open('csv/web-accessibility.csv', 'r', newline='') as file:
+            reader = csv.reader(file)
+            first_row = next(reader)
+    except FileNotFoundError:
+        print("Creating csv file...")
+
+    if args.csv:
+        dot_index = args.url.rfind(".")
+        domain = args.url[dot_index + 1:]
+        with open('csv/web-accessibility.csv', 'a+', newline='') as file:
+            writer = csv.writer(file)
+            None if first_row == heading_list else writer.writerow(heading_list)
+            writer.writerow([args.name or title, score, check_language(), domain])
+
+
+None if not args.name else cprint("Name: " + args.name, c_warning, "on_grey")
 check_title()
 check_language()
 check_heading_tags()
@@ -301,3 +323,4 @@ check_a_tag()
 check_table_tag()
 check_form_tag()
 show_score()
+write_csv()
