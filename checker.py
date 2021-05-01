@@ -39,6 +39,7 @@ c_primary = "blue"
 c_secondary = "cyan"
 c_alert = "magenta"
 
+#not checking for aria roles
 
 def check_img_tag():
     global score
@@ -53,8 +54,10 @@ def check_img_tag():
                 score -= 1
                 missing_alts.append(str(tag))
             elif tag["alt"] == "":
+                score -= 1
                 empty_alts.append(str(tag))
             if "title" not in attrs_keys:
+                score -= 1
                 missing_titles.append(str(tag))
 
         if missing_alts:
@@ -62,14 +65,14 @@ def check_img_tag():
             print("\n ".join(missing_alts))
             cprint("It's recommended to add 'alt' attribute to increase accessibility.", c_success)
         if missing_titles:
-            cprint("These img tags are missing 'title' attribute:\n", c_warning, end=" ")
+            cprint("These img tags are missing 'title' attribute:\n", c_danger, end=" ")
             print("\n ".join(missing_titles))
             cprint("Consider adding a title attribute to increase accessibility.", c_success)
         if empty_alts:
-            cprint("These img tags have empty 'alt' attribute:\n", c_warning, end=" ")
+            cprint("These img tags have empty 'alt' attribute:\n", c_danger, end=" ")
             print("\n ".join(empty_alts))
             cprint("This is okay if you are using the images for decorative purposes."
-                   "\nHowever, if possible you should use CSS to display images that are only decorative.", c_success)
+                   "\nHowever, if possible it's recommended to use CSS to display images that are only decorative.", c_success)
 
 
 def check_a_tag():
@@ -125,6 +128,7 @@ def check_table_tag():
             for th in table.find_all("th"):
                 attrs_keys = th.attrs.keys()
                 if "scope" not in attrs_keys:
+                    score -= 1
                     missing_scopes.append(th)
         if table.caption is None:
             score -= 1
@@ -141,7 +145,7 @@ def check_table_tag():
             "Captions act as alt text for a table, giving a screen reader user a useful quick summary of the table's contents.",
             c_success)
     if missing_scopes:
-        cprint("These th tags are missing 'scope' attribute:\n", c_warning, end=" ")
+        cprint("These th tags are missing 'scope' attribute:\n", c_danger, end=" ")
         print("\n ".join(missing_scopes))
         cprint("Scopes help a screen reader user to associate rows or columns together as groupings of data.",
                c_success)
@@ -166,6 +170,7 @@ def check_form_tag():  # decrease score according to input numbers for labels.
                 inputs.append(_input)
             for i in range(len(labels)):
                 if labels[i]["for"] and inputs[i]["id"] and labels[i]["for"] != inputs[i]["id"]:
+                    score -= 1
                     mismatch_labels.append(str(labels[i]))
                     mismatch_inputs.append(str(inputs[i]))
     if missing_labels:
@@ -175,15 +180,15 @@ def check_form_tag():  # decrease score according to input numbers for labels.
             "To associate the label unambiguously with the form input and make it clear how to fill it in, consider adding label tags.",
             c_success)
     if mismatch_labels and mismatch_inputs:
-        cprint("These forms' labels' 'for' attributes don't match with inputs' 'id' attribute:", c_warning)
+        cprint("These forms' labels' 'for' attributes don't match with inputs' 'id' attribute:", c_danger)
         for i in range(len(mismatch_labels)):
             print(" " + mismatch_labels[i])
             print(" " + mismatch_inputs[i])
         # print("\n ".join(mismatch_labels))
         # print("\n ".join(mismatch_inputs))
         cprint(
-            "To associate the <label> with an <input> element, you need to give the <input> an id attribute."
-            "\nThe <label> then needs a for attribute whose value is the same as the input's id.",
+            "To associate the <label> with an <input> element, you need to give the <input> an 'id' attribute."
+            "\nThe <label> then needs a 'for' attribute whose value is the same as the input's 'id'.",
             c_success)
 
 
