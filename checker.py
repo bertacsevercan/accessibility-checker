@@ -1,6 +1,7 @@
 import requests
 import argparse
 import csv
+from re import search
 from bs4 import BeautifulSoup
 from termcolor import colored, cprint
 
@@ -305,8 +306,8 @@ def write_csv():
         print("Creating csv file...")
 
     if args.csv:
-        dot_index = args.url.rfind(".")
-        domain = args.url[dot_index + 1:]
+        # regex for capturing top-level domain
+        domain = search(r"\.[^.]{2,3}(?:\.[^.]{2,3})?(?:$|/)", args.url).group()
         with open('csv/web-accessibility.csv', 'a+', newline='') as file:
             writer = csv.writer(file)
             None if first_row == heading_list else writer.writerow(heading_list)
