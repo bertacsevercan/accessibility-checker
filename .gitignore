@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 # Extra
-.csv
+*.csv
 .DS_Store
