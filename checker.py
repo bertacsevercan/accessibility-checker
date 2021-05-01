@@ -3,17 +3,20 @@ import argparse
 from bs4 import BeautifulSoup
 from termcolor import colored, cprint
 
-description = "This program checks the entered website's accessibility \
-provided by W3C guidelines and outputs a score. This is not a definite tool for checking accessibility \
+description = "This program checks the given website's accessibility \
+provided by the W3C guidelines and outputs a score. Note that, this is not a definite tool for checking accessibility \
 therefore the results should be treated as suggestions. Also, this program doesn't check \
-WAI-ARIA attributes, it checks for HTML semantics. \
+WAI-ARIA attributes, it checks for other HTML semantics. \
 Sources: https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=121#identify-input-purpose, https://developer.mozilla.org/en-US/docs/Web/Accessibility"
 
 # parser for CLI commands
 parser = argparse.ArgumentParser(description=description)
 parser.add_argument("url", help="enter the website url.")
-parser.add_argument("-sh", "--short", action="store_true", help="show a short version of the result with highlights.")
-parser.add_argument("-sc", "--score", action="store_true", help="show only the score.")
+parser.add_argument("-n", "--name", help="enter the name of the website.")
+parser.add_argument("-s", "--short", action="store_true", help="show a short version of the result with highlights.")
+parser.add_argument("-o", "--score", action="store_true", help="show only the score.")
+parser.add_argument("-c", "--csv", action="store_true", help="write the scores as csv.")
+parser.add_argument("-x", "--excel", action="store_true", help="write the scores as excel.")
 
 args = parser.parse_args()
 
@@ -26,6 +29,7 @@ bad_semantics_test_url = "https://mdn.github.io/learning-area/accessibility/html
 good_semantics_test_url = "https://mdn.github.io/learning-area/accessibility/html/good-semantics.html"
 bad_form_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-form.html"
 good_form_test_url = "https://mdn.github.io/learning-area/accessibility/html/good-form.html"
+
 session = requests.Session()  # for faster fetch
 # file = open("accessibility-score.txt", "w+", encoding="utf-8")
 
@@ -34,7 +38,7 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
 request = None
 try:
-    request = session.get(bad_semantics_test_url, headers=headers)
+    request = session.get(args.url, headers=headers)
     # raise and handle http errors
     request.raise_for_status()
 except requests.exceptions.HTTPError as err:
@@ -63,9 +67,10 @@ def check_heading_tags():
 
     if h1 and h2 and h3 and h4 and h5 and h6:
         score -= 10
-        cprint("The page has no headings!\n", c_danger, end="")
-        cprint("Headings (<h1>-<h6>) provide important document structure and helps assistive technology users.\n",
-               c_success)
+        if not args.score:
+            cprint("The page has no headings!\n", c_danger, end="")
+            cprint("Headings (<h1>-<h6>) provide important document structure and helps assistive technology users.\n",
+                   c_success)
 
 
 def check_page_regions():
@@ -78,10 +83,11 @@ def check_page_regions():
 
     if header and nav and main and footer and aside:
         score -= 10
-        cprint("The page has no regions!\n", c_danger, end="")
-        cprint(
-            "Mark up different regions of the web page, so that they can be identified by web browsers and assistive technologies.\n",
-            c_success)
+        if args.score:
+            cprint("The page has no regions!\n", c_danger, end="")
+            cprint(
+                "Mark up different regions of the web page, so that they can be identified by web browsers and assistive technologies.\n",
+                c_success)
 
 
 def check_img_tag():
@@ -103,20 +109,21 @@ def check_img_tag():
                 score -= 1
                 missing_titles.append(str(tag))
 
-        if missing_alts:
-            cprint("These img tags are missing 'alt' attribute:\n", c_danger, end=" ")
-            print("\n ".join(missing_alts))
-            cprint("It's recommended to add 'alt' attribute to increase accessibility.", c_success)
-        if missing_titles:
-            cprint("These img tags are missing 'title' attribute:\n", c_danger, end=" ")
-            print("\n ".join(missing_titles))
-            cprint("Consider adding a title attribute to increase accessibility.", c_success)
-        if empty_alts:
-            cprint("These img tags have empty 'alt' attribute:\n", c_danger, end=" ")
-            print("\n ".join(empty_alts))
-            cprint("This is okay if you are using the images for decorative purposes."
-                   "\nHowever, if possible it's recommended to use CSS to display images that are only decorative.",
-                   c_success)
+        if not args.score:
+            if missing_alts:
+                cprint("These img tags are missing 'alt' attribute:\n", c_danger, end=" ")
+                None if args.short else print("\n ".join(missing_alts))
+                cprint("It's recommended to add 'alt' attribute to increase accessibility.", c_success)
+            if missing_titles:
+                cprint("These img tags are missing 'title' attribute:\n", c_danger, end=" ")
+                None if args.short else print("\n ".join(missing_titles))
+                cprint("Consider adding a title attribute to increase accessibility.", c_success)
+            if empty_alts:
+                cprint("These img tags have empty 'alt' attribute:\n", c_danger, end=" ")
+                None if args.short else print("\n ".join(empty_alts))
+                cprint("This is okay if you are using the images for decorative purposes."
+                       "\nHowever, if possible it's recommended to use CSS to display images that are only decorative.",
+                       c_success)
 
 
 def check_a_tag():
@@ -137,25 +144,26 @@ def check_a_tag():
                 score -= 1
                 bad_links.append(str(tag))
 
-        if missing_hrefs:
-            cprint("These anchor tags' href attributes are '#':\n", c_danger, end=" ")
-            print("\n ".join(missing_hrefs))
-            cprint("If you are not using anchor tags for navigation consider using a button instead.", c_success)
+        if not args.score:
+            if missing_hrefs:
+                cprint("These anchor tags' href attributes are '#':\n", c_danger, end=" ")
+                None if args.short else print("\n ".join(missing_hrefs))
+                cprint("If you are not using anchor tags for navigation consider using a button instead.", c_success)
 
-        if new_windows:
-            cprint(
-                "These anchor tags are redirecting to a new page:\n", c_warning, end=" ")
-            print("\n ".join(new_windows))
-            cprint("Consider adding an explanation to the content such as: '(opens in a new window)'.", c_success)
+            if new_windows:
+                cprint(
+                    "These anchor tags are redirecting to a new page:\n", c_warning, end=" ")
+                None if args.short else print("\n ".join(new_windows))
+                cprint("Consider adding an explanation to the content such as: '(opens in a new window)'.", c_success)
 
-        if bad_links:
-            cprint(
-                "These anchor tags contain non-descriptive content message such as: 'click here':\n", c_warning,
-                end=" ")
-            print("\n ".join(bad_links))
-            cprint(
-                "Make sure your links' content messages make sense out of context, read on their own, as well as in the context of the paragraph they are in.",
-                c_success)
+            if bad_links:
+                cprint(
+                    "These anchor tags contain non-descriptive content message such as: 'click here':\n", c_warning,
+                    end=" ")
+                None if args.short else print("\n ".join(bad_links))
+                cprint(
+                    "Make sure your links' content messages make sense out of context, read on their own, as well as in the context of the paragraph they are in.",
+                    c_success)
 
 
 def check_table_tag():
@@ -178,21 +186,22 @@ def check_table_tag():
             score -= 1
             missing_captions.append(str(table))
 
-    if missing_ths:
-        cprint("These table tags are missing 'th' child tag:\n", c_danger, end=" ")
-        print("\n ".join(missing_ths))
-        cprint("'th' tag helps screen readers to identify table content better.", c_success)
-    if missing_captions:
-        cprint("These table tags are missing 'caption' child tag:\n", c_danger, end=" ")
-        print("\n ".join(missing_captions))
-        cprint(
-            "Captions act as alt text for a table, giving a screen reader user a useful quick summary of the table's contents.",
-            c_success)
-    if missing_scopes:
-        cprint("These th tags are missing 'scope' attribute:\n", c_danger, end=" ")
-        print("\n ".join(missing_scopes))
-        cprint("Scopes help a screen reader user to associate rows or columns together as groupings of data.",
-               c_success)
+    if not args.score:
+        if missing_ths:
+            cprint("These table tags are missing 'th' child tag:\n", c_danger, end=" ")
+            None if args.short else print("\n ".join(missing_ths))
+            cprint("'th' tag helps screen readers to identify table content better.", c_success)
+        if missing_captions:
+            cprint("These table tags are missing 'caption' child tag:\n", c_danger, end=" ")
+            None if args.short else print("\n ".join(missing_captions))
+            cprint(
+                "Captions act as alt text for a table, giving a screen reader user a useful quick summary of the table's contents.",
+                c_success)
+        if missing_scopes:
+            cprint("These th tags are missing 'scope' attribute:\n", c_danger, end=" ")
+            None if args.short else print("\n ".join(missing_scopes))
+            cprint("Scopes help a screen reader user to associate rows or columns together as groupings of data.",
+                   c_success)
 
 
 def check_form_tag():  # decrease score according to input numbers for labels.
@@ -218,21 +227,23 @@ def check_form_tag():  # decrease score according to input numbers for labels.
                         score -= 1
                         mismatch_labels.append(str(labels[i]))
                         mismatch_inputs.append(str(inputs[i]))
-    if missing_labels:
-        cprint("These forms are missing the labels for inputs:", c_danger)
-        print("\n".join(missing_labels))
-        cprint(
-            "To associate the label unambiguously with the form input and make it clear how to fill it in, consider adding label tags.",
-            c_success)
-    if mismatch_labels and mismatch_inputs:
-        cprint("These forms' labels' 'for' attributes don't match with inputs' 'id' attribute:", c_danger)
-        for i in range(len(mismatch_labels)):
-            print(" " + mismatch_labels[i])
-            print(" " + mismatch_inputs[i])
-        cprint(
-            "To associate the <label> with an <input> element, you need to give the <input> an 'id' attribute."
-            "\nThe <label> then needs a 'for' attribute whose value is the same as the input's 'id'.",
-            c_success)
+    if not args.score:
+        if missing_labels:
+            cprint("These forms are missing the labels for inputs:", c_danger)
+            None if args.short else print("\n".join(missing_labels))
+            cprint(
+                "To associate the label unambiguously with the form input and make it clear how to fill it in, consider adding label tags.",
+                c_success)
+        if mismatch_labels and mismatch_inputs:
+            cprint("These forms' labels' 'for' attributes don't match with inputs' 'id' attribute:", c_danger)
+            if not args.short:
+                for i in range(len(mismatch_labels)):
+                    print(" " + mismatch_labels[i])
+                    print(" " + mismatch_inputs[i])
+            cprint(
+                "To associate the <label> with an <input> element, you need to give the <input> an 'id' attribute."
+                "\nThe <label> then needs a 'for' attribute whose value is the same as the input's 'id'.",
+                c_success)
 
 
 def check_language():
@@ -240,8 +251,25 @@ def check_language():
     attrs_keys = soup.find("html").attrs.keys()
     if "lang" not in attrs_keys:
         score -= 10
-        cprint("Html tag is missing 'lang' attribute. Therefore, the language of the document  is unidentified.",
-               c_danger)
+        None if args.score else cprint(
+            "Html tag is missing 'lang' attribute. Therefore, the language of the document  is unidentified.",
+            c_danger)
+
+
+def check_title():
+    global score
+    title = ""
+    if soup.title is None:
+        title = "Unknown"
+        score -= 10
+
+        None if args.score else cprint(
+            "It is important in each HTML document to include a <title> that describes the page's purpose.",
+            c_danger)
+    else:
+        title = soup.title.text
+    website_title = colored(title, c_alert, attrs=['underline', 'bold'])
+    cprint("Title: " + website_title + "\n", c_secondary)
 
 
 def show_score():
@@ -262,20 +290,6 @@ def show_score():
     print()
     cprint(message, c_secondary)
     cprint(f"Score: {score}", color, "on_grey")
-
-
-def check_title():
-    global score
-    title = ""
-    if soup.title is None:
-        title = "Unknown"
-        score -= 10
-        cprint("It is important in each HTML document to include a <title> that describes the page's purpose.",
-               c_danger)
-    else:
-        title = soup.title.text
-    website_title = colored(title, c_alert, attrs=['underline', 'bold'])
-    cprint("Title: " + website_title + "\n", c_secondary)
 
 
 check_title()
