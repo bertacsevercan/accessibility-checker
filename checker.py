@@ -1,11 +1,21 @@
 import requests
-import sys
+import argparse
 from bs4 import BeautifulSoup
 from termcolor import colored, cprint
 
-# use Argparse for CLI
-# add color
-# website_url = input("Enter the website url: ")  # sys.argv[1]
+description = "This program checks the entered website's accessibility \
+provided by W3C guidelines and outputs a score. This is not a definite tool for checking accessibility \
+therefore the results should be treated as suggestions. Also, this program doesn't check \
+WAI-ARIA attributes, it checks for HTML semantics. \
+Sources: https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=121#identify-input-purpose, https://developer.mozilla.org/en-US/docs/Web/Accessibility"
+
+# parser for CLI commands
+parser = argparse.ArgumentParser(description=description)
+parser.add_argument("url", help="enter the website url.")
+parser.add_argument("-sh", "--short", action="store_true", help="show a short version of the result with highlights.")
+parser.add_argument("-sc", "--score", action="store_true", help="show only the score.")
+
+args = parser.parse_args()
 
 img_test_url = "https://mdn.github.io/learning-area/accessibility/html/accessible-image.html"
 e_commerce_test = "https://www.gittigidiyor.com"
