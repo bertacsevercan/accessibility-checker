@@ -25,4 +25,5 @@ optional arguments:
 
 ```
 # Sources : 
-https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=121#identify-input-purpose, https://developer.mozilla.org/en-US/docs/Web/Accessibility
+[WCAG2](https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=121#identify-input-purpose)  
+[Accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
