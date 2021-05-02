@@ -9,9 +9,9 @@ Also, this program doesn't check WAI-ARIA attributes, it checks for other HTML s
 # Usage :
 
 ```cmd
-$ python checker.py <website-url> 
+$ python checker.py <website-url> [-h] [-n NAME] [-s] [-o] [-c]
 ```
-# Guide :
+# Arguments Guide :
 ```cmd
 positional arguments:
   url                   enter the website url.
