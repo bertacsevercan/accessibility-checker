@@ -25,5 +25,5 @@ optional arguments:
 
 ```
 # Sources : 
-[WCAG2](https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=121#principle1)  
-[Accessibility](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
+[WCAG2-W3C](https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=121#principle1)  
+[Accessibility-MDN](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
