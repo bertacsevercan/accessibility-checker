@@ -1,6 +1,7 @@
 import requests
 import argparse
 import csv
+from os import mkdir
 from re import search
 from bs4 import BeautifulSoup
 from termcolor import colored, cprint
@@ -295,6 +296,16 @@ def show_score():
     cprint(f"Score: {score}", color, "on_grey")
 
 
+def create_csv_dir():
+    dir_name = "csv"
+    try:
+        # Create target Directory
+        mkdir(dir_name)
+        print("Directory ", dir_name, " created.")
+    except FileExistsError:
+        print("Directory ", dir_name, " already exists")
+
+
 def write_csv():
     first_row = []
     heading_list = ["Name", "Score", "Language", "Domain"]
@@ -315,14 +326,18 @@ def write_csv():
             writer.writerow([args.name or title, score, check_language(), domain])
 
 
-None if not args.name else cprint("Name: " + args.name, c_warning, "on_grey")
-check_title()
-check_language()
-check_heading_tags()
-check_page_regions()
-check_img_tag()
-check_a_tag()
-check_table_tag()
-check_form_tag()
-show_score()
-write_csv()
+try:
+    create_csv_dir()
+    None if not args.name else cprint("Name: " + args.name, c_warning, "on_grey")
+    check_title()
+    check_language()
+    check_heading_tags()
+    check_page_regions()
+    check_img_tag()
+    check_a_tag()
+    check_table_tag()
+    check_form_tag()
+    show_score()
+    write_csv()
+except Exception as err:
+    print("Error occurred: ", err.__class__.__name__)
