@@ -10,7 +10,7 @@ Also, this program doesn't check WAI-ARIA attributes, it checks for other HTML s
 
 Get the dependencies first:  
 ```cmd
-pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
 
 ```cmd
