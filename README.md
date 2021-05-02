@@ -8,6 +8,11 @@ Also, this program doesn't check WAI-ARIA attributes, it checks for other HTML s
 
 # Usage :
 
+Get the dependencies first:  
+```cmd
+pip install -r requirements.txt
+```
+
 ```cmd
 $ python checker.py <website-url> [-h] [-n NAME] [-s] [-o] [-c]
 ```
