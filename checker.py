@@ -1,6 +1,8 @@
 import requests
 import argparse
 import csv
+import sys
+import traceback
 from os import mkdir
 from re import search
 from bs4 import BeautifulSoup
@@ -22,6 +24,7 @@ parser.add_argument("-c", "--csv", action="store_true", help="write the scores a
 
 args = parser.parse_args()
 
+uni_test_url = "https://www.bilgi.edu.tr/tr/"
 img_test_url = "https://mdn.github.io/learning-area/accessibility/html/accessible-image.html"
 e_commerce_test = "https://www.gittigidiyor.com"
 bad_table_test_url = "https://mdn.github.io/learning-area/accessibility/html/bad-table.html"
@@ -138,11 +141,12 @@ def check_a_tag():
     if all_a:
         for tag in all_a:
             attrs_keys = tag.attrs.keys()
-            if tag["href"] == "#":
-                score -= 1
-                missing_hrefs.append(str(tag))
-            elif "target" in attrs_keys and tag["target"] == "_blank":
-                new_windows.append(str(tag))
+            if "href" in attrs_keys:
+                if tag["href"] == "#":
+                    score -= 1
+                    missing_hrefs.append(str(tag))
+                elif "target" in attrs_keys and tag["target"] == "_blank":
+                    new_windows.append(str(tag))
             if tag.string and "click here" in tag.string:
                 score -= 1
                 bad_links.append(str(tag))
@@ -258,7 +262,8 @@ def check_language():
         None if args.score else cprint(
             "Html tag is missing 'lang' attribute. Therefore, the language of the document  is unidentified.",
             c_danger)
-    return html["lang"]
+    else:
+        return html["lang"]
 
 
 def check_title():
@@ -301,9 +306,9 @@ def create_csv_dir():
     try:
         # Create target Directory
         mkdir(dir_name)
-        print("Directory ", dir_name, " created.")
+        print("Directory", dir_name, "created.")
     except FileExistsError:
-        print("Directory ", dir_name, " already exists")
+        print("Directory", dir_name, "already exists")
 
 
 def write_csv():
@@ -326,6 +331,13 @@ def write_csv():
             writer.writerow([args.name or title, score, check_language(), domain])
 
 
+def collect_err(err):
+    format_url = f"-url: {args.url}\n"
+    lines = [format_url, err]
+    with open('exceptions.txt', 'a+') as file:
+        file.writelines(lines)
+
+
 try:
     create_csv_dir()
     None if not args.name else cprint("Name: " + args.name, c_warning, "on_grey")
@@ -340,4 +352,8 @@ try:
     show_score()
     write_csv()
 except Exception as err:
-    print("Error occurred: ", err.__class__.__name__)
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    tb = traceback.TracebackException(exc_type, exc_value, exc_tb)
+    format_err = ''.join(tb.format()) + "\n"
+    cprint("Error occurred: " + err.__class__.__name__, c_danger)
+    collect_err(format_err)
