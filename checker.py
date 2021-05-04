@@ -76,7 +76,7 @@ def check_heading_tags():
 
     if h1 and h2 and h3 and h4 and h5 and h6:
         score -= 10
-        checklist["headings"] = True
+        checklist["has_issue_headings"] = True
         if not args.score:
             cprint("The page has no headings!\n", c_danger, end="")
             cprint("Headings (<h1>-<h6>) provide important document structure and helps assistive technology users.\n",
@@ -93,7 +93,7 @@ def check_page_regions():
 
     if header and nav and main and footer and aside:
         score -= 10
-        checklist["regions"] = True
+        checklist["has_issue_regions"] = True
         if args.score:
             cprint("The page has no regions!\n", c_danger, end="")
             cprint(
@@ -112,15 +112,15 @@ def check_img_tag():
             attrs_keys = tag.attrs.keys()
             if "alt" not in attrs_keys:  # check if all img tags contain alt attr
                 score -= 1
-                checklist["image"] = True
+                checklist["has_issue_image"] = True
                 missing_alts.append(str(tag))
             elif tag["alt"] == "":
                 score -= 1
-                checklist["image"] = True
+                checklist["has_issue_image"] = True
                 empty_alts.append(str(tag))
             if "title" not in attrs_keys:
                 score -= 1
-                checklist["image"] = True
+                checklist["has_issue_image"] = True
                 missing_titles.append(str(tag))
 
         if not args.score:
@@ -152,13 +152,13 @@ def check_a_tag():
             if "href" in attrs_keys:
                 if tag["href"] == "#":
                     score -= 1
-                    checklist["anchor"] = True
+                    checklist["has_issue_anchor"] = True
                     missing_hrefs.append(str(tag))
                 elif "target" in attrs_keys and tag["target"] == "_blank":
                     new_windows.append(str(tag))
             if tag.string and "click here" in tag.string:
                 score -= 1
-                checklist["anchor"] = True
+                checklist["has_issue_anchor"] = True
                 bad_links.append(str(tag))
 
         if not args.score:
@@ -192,18 +192,18 @@ def check_table_tag():
     for table in all_table:
         if table.th is None:
             score -= 1
-            checklist["table"] = True
+            checklist["has_issue_table"] = True
             missing_ths.append(str(table))
         elif table.th is not None:
             for th in table.find_all("th"):
                 attrs_keys = th.attrs.keys()
                 if "scope" not in attrs_keys:
                     score -= 1
-                    checklist["table"] = True
+                    checklist["has_issue_table"] = True
                     missing_scopes.append(th)
         if table.caption is None:
             score -= 1
-            checklist["table"] = True
+            checklist["has_issue_table"] = True
             missing_captions.append(str(table))
 
     if not args.score:
@@ -235,7 +235,7 @@ def check_form_tag():  # decrease score according to input numbers for labels.
     for form in all_form:
         if form.label is None:
             score -= 1
-            checklist["form"] = True
+            checklist["has_issue_form"] = True
             missing_labels.append(str(form))
         elif form.label is not None:
             for label in form.find_all("label"):
@@ -246,7 +246,7 @@ def check_form_tag():  # decrease score according to input numbers for labels.
                 if "for" in labels[i].attrs.keys() and "id" in inputs[i].attrs.keys():
                     if labels[i]["for"] != inputs[i]["id"]:
                         score -= 1
-                        checklist["form"] = True
+                        checklist["has_issue_form"] = True
                         mismatch_labels.append(str(labels[i]))
                         mismatch_inputs.append(str(inputs[i]))
     if not args.score:
@@ -274,7 +274,7 @@ def check_language():
     attrs_keys = html.keys()
     if "lang" not in attrs_keys:
         score -= 10
-        checklist["lang"] = True
+        checklist["has_issue_lang"] = True
         None if args.score else cprint(
             "Html tag is missing 'lang' attribute. Therefore, the language of the document  is unidentified.",
             c_danger)
@@ -288,7 +288,7 @@ def check_title():
     if soup.title is None:
         title = "Unknown"
         score -= 10
-        checklist["title"] = True
+        checklist["has_issue_title"] = True
         None if args.score else cprint(
             "It is important in each HTML document to include a <title> that describes the page's purpose.",
             c_danger)
@@ -352,9 +352,9 @@ def write_csv():
             writer.writerow(csv_content)
 
 
-def collect_err(err):
+def collect_err(e):
     format_url = f"-url: {args.url}\n"
-    lines = [format_url, err]
+    lines = [format_url, e]
     with open('exceptions.txt', 'a+') as file:
         file.writelines(lines)
 
