@@ -58,8 +58,8 @@ c_primary = "blue"
 c_secondary = "cyan"
 c_alert = "magenta"
 checklist = {
-    "headings": False, "regions": False, "image": False, "anchor": False, "table": False, "form": False, "lang": False,
-    "title": False
+    "has_issue_headings": False, "has_issue_regions": False, "has_issue_image": False, "has_issue_anchor": False,
+    "has_issue_table": False, "has_issue_form": False, "has_issue_lang": False, "has_issue_title": False
 }
 
 
