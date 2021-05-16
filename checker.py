@@ -236,7 +236,10 @@ def check_form_tag():  # decrease score according to input numbers for labels.
         if form.label is None:
             score -= 1
             checklist["has_issue_form"] = True
-            missing_labels.append(str(form))
+            form_split = str(form).split("\n")
+            opening_tag = form_split[0]
+            closing_tag = form_split[len(form_split) - 1]
+            missing_labels.append(f"{opening_tag} ... {closing_tag}")
         elif form.label is not None:
             for label in form.find_all("label"):
                 labels.append(label)
@@ -344,7 +347,7 @@ def write_csv():
         regex = r"\.[^.]{2,3}(?:\.[^.]{2,3})?(?:$|/)"
         domain = search(regex, args.url).group()
         checklist_values = list(checklist.values())
-        csv_content = [args.name or title, score, check_language(), domain]
+        csv_content = [args.name or title.strip(), score, check_language(), domain]
         csv_content.extend(checklist_values)
         with open('csv/web-accessibility.csv', 'a+', newline='') as file:
             writer = csv.writer(file)
