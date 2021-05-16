@@ -29,6 +29,13 @@ optional arguments:
   -c, --csv             write the scores as csv.
 
 ```
+# Known Issues :  
+* > PermissionError: [Errno 13] Permission denied
+```
+chown admin:admin web-accessibility.csv
+or
+chmod 755 web-accessibility.csv
+```
 # Sources : 
 [WCAG2-W3C](https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=121#principle1)  
 [Accessibility-MDN](https://developer.mozilla.org/en-US/docs/Web/Accessibility)
