@@ -316,7 +316,7 @@ def show_score():
     global score
     color = ""
     message = "May needs some work!"
-    if score >= 80:
+    if score >= 70:
         color = c_success
         message = "Looks good!"
     elif score >= 50:
