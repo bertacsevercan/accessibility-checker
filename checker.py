@@ -200,7 +200,7 @@ def check_table_tag():
                 if "scope" not in attrs_keys:
                     score -= 1
                     checklist["has_issue_table"] = True
-                    missing_scopes.append(th)
+                    missing_scopes.append(str(th))
         if table.caption is None:
             score -= 1
             checklist["has_issue_table"] = True
@@ -284,7 +284,15 @@ def check_form_tag():  # decrease score according to input numbers for labels.
 
 def check_language():
     global score
-    html = soup.find("html").attrs
+    try:
+        html = soup.find("html").attrs
+    except AttributeError:
+        score -= 10
+        checklist["has_issue_lang"] = True
+        None if args.score else cprint(
+            "Html tag is missing. It is recommended that the inner tags should be wrapped with '<html>'.",
+            c_danger)
+        return None
     attrs_keys = html.keys()
     if "lang" not in attrs_keys:
         score -= 10
