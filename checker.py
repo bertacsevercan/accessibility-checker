@@ -245,13 +245,23 @@ def check_form_tag():  # decrease score according to input numbers for labels.
                 labels.append(label)
             for _input in form.find_all("input"):
                 inputs.append(_input)
-            for i in range(len(labels)):
-                if "for" in labels[i].attrs.keys() and "id" in inputs[i].attrs.keys():
-                    if labels[i]["for"] != inputs[i]["id"]:
-                        score -= 1
-                        checklist["has_issue_form"] = True
-                        mismatch_labels.append(str(labels[i]))
-                        mismatch_inputs.append(str(inputs[i]))
+            if len(labels) == len(inputs):
+                for i in range(len(labels)):
+                    if "for" in labels[i].attrs.keys() and "id" in inputs[i].attrs.keys():
+                        if labels[i]["for"] != inputs[i]["id"]:
+                            score -= 1
+                            checklist["has_issue_form"] = True
+                            mismatch_labels.append(str(labels[i]))
+                            mismatch_inputs.append(str(inputs[i]))
+            else:
+                is_labels_more = len(labels) > len(inputs)
+                score -= len(labels) if is_labels_more else len(inputs)
+                checklist["has_issue_form"] = True
+                for i in range(len(labels)):
+                    mismatch_labels.append(str(labels[i]))
+                for i in range(len(inputs)):
+                    mismatch_inputs.append(str(inputs[i]))
+
     if not args.score:
         if missing_labels:
             cprint("These forms are missing the labels for inputs:", c_danger)
@@ -264,6 +274,7 @@ def check_form_tag():  # decrease score according to input numbers for labels.
             if not args.short:
                 for i in range(len(mismatch_labels)):
                     print(" " + mismatch_labels[i])
+                for i in range(len(mismatch_inputs)):
                     print(" " + mismatch_inputs[i])
             cprint(
                 "To associate the <label> with an <input> element, you need to give the <input> an 'id' attribute."
