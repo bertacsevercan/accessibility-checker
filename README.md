@@ -30,7 +30,7 @@ optional arguments:
 
 ```
 # Known Issues :  
-* > PermissionError: [Errno 13] Permission denied  
+* PermissionError: [Errno 13] Permission denied  
 Run these commands:  
 ```
 chown admin:admin web-accessibility.csv
