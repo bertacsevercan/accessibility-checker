@@ -355,7 +355,7 @@ def write_csv():
     heading_list = ["Name", "Score", "Language", "Domain"]
     heading_list.extend(checklist.keys())
     try:
-        with open('csv/web-accessibility.csv', 'r', newline='') as file:
+        with open('csv/web-accessibility.csv', 'r', newline='', encoding="utf-8") as file:
             reader = csv.reader(file)
             first_row = next(reader)
     except FileNotFoundError:
