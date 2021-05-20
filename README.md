@@ -31,7 +31,8 @@ optional arguments:
 ```
 # Known Issues :  
 * PermissionError: [Errno 13] Permission denied  
-Run these commands:  
+This error may be caused if the csv file is open, try running the program after closing the csv file.  
+If the issue persist try these commands:  
 ```
 chown admin:admin web-accessibility.csv
 or
